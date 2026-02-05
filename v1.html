@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Heart of Thủ Khoa Lý</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: black;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+      /* ================= BASIC SETUP ================= */
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      const PI = Math.PI;
+
+      /* ================= HEART FORMULA ================= */
+      function heartPoint(t) {
+        return {
+          x: 16 * Math.pow(Math.sin(t), 3),
+          y:
+            13 * Math.cos(t) -
+            5 * Math.cos(2 * t) -
+            2 * Math.cos(3 * t) -
+            Math.cos(4 * t),
+        };
+      }
+
+      /* ================= PARTICLES ================= */
+      const particles = [];
+      const TARGET = 2600;
+
+      // Hàm tính vị trí thực tế trên tim
+      function getHeartPosition(t, depth) {
+        const base = heartPoint(t);
+        const r = (1 - depth) * 12;
+        return { x: base.x * r, y: base.y * r };
+      }
+
+      while (particles.length < TARGET) {
+        const t = Math.random() * 2 * PI;
+
+        // depth: 0 = biên, 1 = tâm
+        const depth = Math.pow(Math.random(), 1.5);
+
+        // Tính vị trí thực tế
+        const pos = getHeartPosition(t, depth);
+
+        // Phát hiện vùng rãnh phía trên (y dương, x gần 0)
+        const isTopGroove = pos.y > 8 && Math.abs(pos.x) < 5;
+
+        // Phát hiện vùng giao nhau phía dưới
+        const isBottomIntersection = pos.y < -8 && Math.abs(pos.x) < 6;
+
+        // Phát hiện vùng trục giữa (x gần 0)
+        const isCenterLine = Math.abs(pos.x) < 0.5;
+
+        // Xác suất cơ bản
+        let prob = Math.exp(-2.6 * depth);
+
+        // Giảm mật độ ở các vùng đặc biệt
+        if (isTopGroove) {
+          prob *= 0.25;
+        } else if (isBottomIntersection) {
+          prob *= 0.35;
+        } else if (isCenterLine) {
+          prob *= 0.4; // Giảm mật độ ở trục giữa
+        }
+
+        if (Math.random() > prob) continue;
+
+        // Thêm nhiễu ngang để phá vỡ đường thẳng
+        const horizontalJitter = (Math.random() - 0.5) * 0.25;
+
+        particles.push({
+          t,
+          depth,
+          size: 1.0,
+          alpha: 0.3 + (1 - depth) * 0.6,
+          jitterX: horizontalJitter, // Nhiễu ngang
+          jitterY: (Math.random() - 0.5) * 0.12, // Nhiễu dọc
+        });
+      }
+
+      /* ================= STARS ================= */
+      const stars = [];
+      for (let i = 0; i < 240; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.4,
+          speed: Math.random() * 0.12 + 0.04,
+        });
+      }
+
+      /* ================= ROMANTIC HEARTBEAT - TIM ĐANG YÊU ================= */
+      function romanticHeartbeat(t) {
+        // Nhịp đập nhanh khi yêu: 95-100 bpm
+        const mainBeat = Math.sin(t * 3.2);
+
+        // Thêm nhịp phụ tạo cảm giác hồi hộp
+        const flutter = Math.sin(t * 6.4) * 0.3;
+
+        // Dao động nhẹ tạo cảm giác rung động
+        const tremor = Math.sin(t * 1.6) * 0.15;
+
+        // Kết hợp tất cả - luôn dương để đập liên tục
+        const combined = (mainBeat + flutter + tremor + 1.5) / 3;
+
+        // Làm mượt và tăng cường
+        return Math.pow(combined, 1.3) * 0.85;
+      }
+
+      /* ================= ANIMATION ================= */
+      let time = 0;
+
+      function drawStars() {
+        ctx.fillStyle = "white";
+        stars.forEach((s) => {
+          s.y += s.speed;
+          if (s.y > canvas.height) {
+            s.y = 0;
+            s.x = Math.random() * canvas.width;
+          }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, 2 * PI);
+          ctx.fill();
+        });
+      }
+
+      function drawHeart() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // Nhịp đập hồi hộp khi yêu
+        const beat = romanticHeartbeat(time);
+
+        particles.forEach((p) => {
+          const base = heartPoint(p.t);
+
+          // Tâm đập mạnh hơn biên một chút
+          const depthFactor = Math.pow(p.depth, 1.4);
+
+          // Biên độ đập vừa phải nhưng liên tục
+          const minAmp = 0.18;
+          const maxAmp = 0.55;
+          const amplitude = minAmp + (maxAmp - minAmp) * depthFactor;
+
+          const pulse = 1 + beat * amplitude;
+
+          const r = (1 - p.depth + p.jitterY) * 12 * pulse;
+
+          // Thêm nhiễu ngang vào vị trí x
+          const x = cx + (base.x + p.jitterX) * r;
+          const y = cy - base.y * r;
+
+          // Ánh sáng ấm áp và rung động
+          const brightness = 1 + beat * 0.5;
+          const red = Math.min(255, 255 * brightness);
+          const green = Math.min(140, 110 * brightness);
+          const blue = Math.min(200, 170 * brightness);
+
+          // Alpha cũng rung động nhẹ
+          const dynamicAlpha = p.alpha + beat * 0.15;
+
+          ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${dynamicAlpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, p.size, 0, 2 * PI);
+          ctx.fill();
+        });
+      }
+
+      function animate() {
+        time += 0.045;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawStars();
+        drawHeart();
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
