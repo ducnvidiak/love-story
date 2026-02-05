@@ -886,9 +886,21 @@
 
       // Nút album
       const photos = [
-        { caption: "Khoảnh khắc đầu tiên 💕", color: "#ff6496" },
-        { caption: "Ngày hạnh phúc nhất 🌟", color: "#ff8fab" },
-        { caption: "Mãi bên nhau em nhé 💖", color: "#ffa6c1" },
+        {
+          src: "images/memory1.jpg",
+          caption: "Khoảnh khắc đầu tiên 💕",
+          color: "#ff6496",
+        },
+        {
+          src: "images/memory2.jpg",
+          caption: "Ngày hạnh phúc nhất 🌟",
+          color: "#ff8fab",
+        },
+        {
+          src: "images/memory3.jpg",
+          caption: "Mãi bên nhau em nhé 💖",
+          color: "#ffa6c1",
+        },
       ];
 
       let currentPhoto = 0;
@@ -906,17 +918,20 @@
         currentPhoto = index;
         const photo = photos[index];
 
-        // Tạo placeholder image với màu đẹp (thay bằng ảnh thật của bạn)
         const albumImg = document.getElementById("album-img");
-        albumImg.style.background = `linear-gradient(135deg, ${photo.color} 0%, #c86b98 100%)`;
-        albumImg.style.height = "500px";
-        albumImg.style.display = "flex";
-        albumImg.style.alignItems = "center";
-        albumImg.style.justifyContent = "center";
-        albumImg.innerHTML = `<div style="font-size: 48px;">📷</div>`;
+
+        albumImg.src = photo.src;
+        albumImg.style.background = "none";
+        albumImg.style.display = "block";
+        albumImg.style.height = "auto";
 
         document.getElementById("album-caption").textContent = photo.caption;
       }
+
+      document.getElementById("album-img").addEventListener("click", () => {
+        currentPhoto = (currentPhoto + 1) % photos.length;
+        showPhoto(currentPhoto);
+      });
 
       // Nút pháo hoa
       document.getElementById("btn-firework").addEventListener("click", () => {
