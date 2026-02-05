@@ -323,13 +323,17 @@
     </style>
   </head>
   <body>
+    <audio id="bg-music" loop>
+      <source src="music.mp3" type="audio/mpeg" />
+    </audio>
+
     <canvas id="canvas"></canvas>
 
     <!-- Lời tỏ tình -->
     <div id="confession">
-      <h1>Em Yêu Anh ❤️</h1>
+      <h1>Anh Yêu Em ❤️</h1>
       <p>"Có con chim nho nhỏ, đậu trên bãi cỏ xanh"</p>
-      <p>"Có tình yêu không nhỏ, vẫn luôn dành cho anh"</p>
+      <p>"Có tình yêu không nhỏ, vẫn luôn dành cho em"</p>
     </div>
 
     <!-- Đếm ngày -->
@@ -925,13 +929,21 @@
       });
 
       // Music control (placeholder)
+      /* ================= MUSIC CONTROL ================= */
+      const music = document.getElementById("bg-music");
       let musicPlaying = false;
+
       document.getElementById("music-toggle").addEventListener("click", () => {
-        musicPlaying = !musicPlaying;
-        document.getElementById("music-toggle").textContent = musicPlaying
-          ? "⏸️"
-          : "🎵";
-        // Thêm code phát nhạc thật ở đây nếu bạn muốn
+        if (!musicPlaying) {
+          music.volume = 0.6; // Âm lượng dịu
+          music.play().catch(() => {});
+          musicPlaying = true;
+          document.getElementById("music-toggle").textContent = "⏸️";
+        } else {
+          music.pause();
+          musicPlaying = false;
+          document.getElementById("music-toggle").textContent = "🎵";
+        }
       });
 
       /* ================= ANIMATION ================= */
