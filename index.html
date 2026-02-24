@@ -876,17 +876,6 @@
       }
 
       const trails = [];
-      window.addEventListener("mousemove", (e) => {
-        for (let i = 0; i < 2; i++)
-          trails.push({
-            x: e.clientX + (Math.random() - 0.5) * 18,
-            y: e.clientY + (Math.random() - 0.5) * 18,
-            sz: 2 + Math.random() * 3,
-            life: 1,
-            vx: (Math.random() - 0.5) * 2,
-            vy: -Math.random() * 2 - 1,
-          });
-      });
 
       const MSGS = [
         "Anh nghĩ về em rất nhiều... 💭",
@@ -1008,20 +997,7 @@
             if (dead) fireworks.splice(i, 1);
           }
         }
-        for (let i = trails.length - 1; i >= 0; i--) {
-          const t = trails[i];
-          t.x += t.vx;
-          t.y += t.vy;
-          t.life -= 0.025;
-          if (t.life <= 0) {
-            trails.splice(i, 1);
-            continue;
-          }
-          ctx.globalAlpha = t.life * 0.65;
-          ctx.font = `${t.sz * 5}px Arial`;
-          ctx.fillText("❤️", t.x, t.y);
-          ctx.globalAlpha = 1;
-        }
+
         showMsg();
         requestAnimationFrame(animateBg);
       }
